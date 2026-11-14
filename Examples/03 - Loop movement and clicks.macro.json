@@ -1,0 +1,10 @@
+{
+  "Version": 1,
+  "Actions": [
+    { "Action": "MouseMove", "X": 400, "Y": 400, "DurationMs": 500 },
+    { "Action": "MouseClick", "Key": "Left", "X": 400, "Y": 400, "Count": 1, "DurationMs": 50 },
+    { "Action": "MouseMove", "X": 700, "Y": 400, "DurationMs": 500 },
+    { "Action": "Delay", "DurationMs": 1000 }
+  ],
+  "Playback": { "Loops": 0, "LoopDelayMs": 500, "StartDelayMs": 3000, "MaximumRunSeconds": 0, "Speed": 1 }
+}

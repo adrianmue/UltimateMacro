@@ -1,0 +1,10 @@
+{
+  "Version": 1,
+  "Name": "F dann E bis zum Stopp",
+  "Actions": [
+    { "Action": "KeyPress", "Key": "F", "Count": 1, "DurationMs": 200 },
+    { "Action": "Delay", "DurationMs": 400 },
+    { "Action": "KeyPress", "Key": "E", "Count": 1, "DurationMs": 200 }
+  ],
+  "Playback": { "Loops": 0, "LoopDelayMs": 250, "StartDelayMs": 2000, "MaximumRunSeconds": 0, "Speed": 1, "UseScanCodes": true }
+}

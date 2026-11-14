@@ -1,0 +1,7 @@
+{
+  "Version": 1,
+  "Actions": [
+    { "Action": "KeyHold", "Key": "Space", "DurationMs": 0 }
+  ],
+  "Playback": { "Loops": 1, "LoopDelayMs": 100, "StartDelayMs": 3000, "MaximumRunSeconds": 0, "Speed": 1 }
+}

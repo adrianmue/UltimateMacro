@@ -1,0 +1,10 @@
+{
+  "Version": 1,
+  "Name": "Eingabetest B - Scan-Codes",
+  "Actions": [
+    { "Action": "KeyPress", "Key": "F", "ScanCode": 33, "Count": 1, "DurationMs": 200 },
+    { "Action": "Delay", "DurationMs": 400 },
+    { "Action": "KeyPress", "Key": "E", "ScanCode": 18, "Count": 1, "DurationMs": 200 }
+  ],
+  "Playback": { "Loops": 1, "LoopDelayMs": 100, "StartDelayMs": 4000, "MaximumRunSeconds": 0, "Speed": 1 }
+}

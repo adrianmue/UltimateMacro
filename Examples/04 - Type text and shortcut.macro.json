@@ -1,0 +1,11 @@
+{
+  "Version": 1,
+  "Actions": [
+    { "Action": "Text", "Text": "Hello from Ultimate Macro!", "IntervalMs": 30 },
+    { "Action": "KeyPress", "Key": "Enter", "DurationMs": 30, "Count": 1 },
+    { "Action": "KeyDown", "Key": "Ctrl" },
+    { "Action": "KeyPress", "Key": "A", "Count": 1, "DurationMs": 30 },
+    { "Action": "KeyUp", "Key": "Ctrl" }
+  ],
+  "Playback": { "Loops": 1, "LoopDelayMs": 100, "StartDelayMs": 3000, "MaximumRunSeconds": 0, "Speed": 1 }
+}

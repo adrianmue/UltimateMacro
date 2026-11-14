@@ -1,0 +1,7 @@
+{
+  "Version": 1,
+  "Actions": [
+    { "Action": "KeyRepeat", "Key": "A", "Count": 20, "DurationMs": 5000, "IntervalMs": 100 }
+  ],
+  "Playback": { "Loops": 1, "LoopDelayMs": 100, "StartDelayMs": 3000, "MaximumRunSeconds": 0, "Speed": 1 }
+}
