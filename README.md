@@ -61,7 +61,7 @@ All action times are in milliseconds. 1000 ms = 1 second. Keys accept names such
 | KeyHold | Hold Key for Duration ms. Duration 0 holds until stopped. |
 | KeyRepeat | Repeat Key using the count/duration rules below. |
 | MouseMove | Move to absolute X/Y. Duration 0 is instant; positive Duration smoothly interpolates from the current cursor position. |
-| MouseClick | Click Left/Right/Middle/X1/X2 at X/Y Count times; Count 0 repeats until stopped. Duration is the hold time per click, Interval is the gap between clicks. |
+| MouseClick | Click Left/Right/Middle/X1/X2 at the current pointer position by default for new actions. Clear **Aktuelle Mausposition verwenden** to move to X/Y before the first click. Count 0 repeats until stopped. Duration is the hold time per click, Interval is the gap between clicks. |
 | Bildziel klicken | Find a marked button or image in the selected window before each click. Optional background mode leaves the system mouse alone. Count 0 repeats until stopped. |
 | MouseDown / MouseUp | Move to X/Y and press/release the mouse button. Insert movement actions between them to drag. |
 | MouseScroll | Key = Vertical or Horizontal. Y = signed wheel delta; +120 is one up/right notch, -120 is one down/left notch. Count multiplies the delta. Scrolls at the current cursor position. |

@@ -250,8 +250,29 @@ internal static partial class SelfTests
                     Check(editor.BackColor == UiTheme.Dark.Surface && FindControls(editor).OfType<ComboBox>().All(combo => combo.BackColor == UiTheme.Dark.Input),
                         "The action editor uses the dark palette for the window and its fields");
                     Check(FindControls(editor).OfType<NumericUpDown>().Any(input => input.AccessibleName == "X-Koordinate" && input.Visible), "Mouse click editing shows position fields");
+                    var cursorMode = FindControls(editor).OfType<CheckBox>().Single(input => input.Text == "Aktuelle Mausposition verwenden");
+                    Check(!cursorMode.Checked, "Existing click actions open with their saved coordinate mode");
+                    cursorMode.Checked = true;
+                    Check(FindControls(editor).OfType<NumericUpDown>().All(input => input.AccessibleName != "X-Koordinate" || !input.Visible), "Current pointer mode hides the coordinate fields");
                     FindControls(editor).OfType<Button>().Single(button => button.Name == "SaveAction").PerformClick();
-                    Check(editor.DialogResult == DialogResult.OK && editor.Result.Count == 0, "Mouse click editor accepts and saves Count 0");
+                    Check(editor.DialogResult == DialogResult.OK && editor.Result.Count == 0 && editor.Result.UseCurrentCursorPosition,
+                        "Mouse click editor saves current pointer mode and Count 0 together");
+                    editor.Close();
+                }
+                using (var editor = new ActionEditor(new MacroAction()))
+                {
+                    editor.Show();
+                    var type = FindControls(editor).OfType<ComboBox>().Single(input => input.DropDownStyle == ComboBoxStyle.DropDownList);
+                    type.SelectedItem = ActionKind.MouseClick;
+                    var cursorMode = FindControls(editor).OfType<CheckBox>().Single(input => input.Text == "Aktuelle Mausposition verwenden");
+                    Check(cursorMode.Visible && cursorMode.Checked, "New clicks default to the current pointer position");
+                    cursorMode.Checked = false;
+                    var coordinates = FindControls(editor).OfType<NumericUpDown>().Single(input => input.AccessibleName == "X-Koordinate");
+                    Check(coordinates.Visible, "Turning current pointer mode off restores the coordinate fields");
+                    coordinates.Value = 123;
+                    FindControls(editor).OfType<Button>().Single(button => button.Name == "SaveAction").PerformClick();
+                    Check(editor.DialogResult == DialogResult.OK && editor.Result.X == 123 && !editor.Result.UseCurrentCursorPosition,
+                        "A new click can still use entered coordinates");
                     editor.Close();
                 }
                 foreach (var key in new[] { "F", "E" })
@@ -539,20 +560,22 @@ internal static partial class SelfTests
 
     private static async Task TestMouseClickRepetition()
     {
-        var action = new MacroAction { Action = ActionKind.MouseClick, Key = "Left", Count = 0, DurationMs = 0, IntervalMs = 0 };
+        var action = new MacroAction { Action = ActionKind.MouseClick, Key = "Left", UseCurrentCursorPosition = true, Count = 0, DurationMs = 0, IntervalMs = 0 };
         MacroFiles.ValidateActions([action], []);
         var restored = MacroFiles.Parse(MacroFiles.Serialize(new MacroDocument { Actions = [action] }));
-        Check(restored.Actions[0].Count == 0, "Infinite mouse clicks validate and survive saving/loading");
+        Check(restored.Actions[0].Count == 0 && restored.Actions[0].UseCurrentCursorPosition, "Infinite mouse clicks at the current pointer survive saving/loading");
         ExpectFailure(() => MacroFiles.ValidateActions([new() { Action = ActionKind.MouseClick, Key = "Left", Count = -1 }], []), "Negative mouse click counts remain invalid");
         var sink = new TestSink();
-        await new MacroPlayer(sink).RunAsync([new() { Action = ActionKind.MouseClick, Key = "Right", Count = 3, DurationMs = 1, IntervalMs = 1 }], Options(), CancellationToken.None);
-        Check(sink.Events.Count(value => value == "Button Right True") == 3 && sink.Events.Count(value => value == "Button Right False") == 3 && sink.Held.Count == 0, "Finite mouse clicks still run exactly Count times");
+        var fixedClick = MacroFiles.Parse("""{"Actions":[{"Action":"MouseClick","Key":"Right","X":0,"Y":0,"Count":3,"DurationMs":1,"IntervalMs":1}]}""");
+        await new MacroPlayer(sink).RunAsync(fixedClick.Actions, Options(), CancellationToken.None);
+        Check(sink.Events.First() == "Move 0 0" && sink.Events.Count(value => value == "Button Right True") == 3 &&
+            sink.Events.Count(value => value == "Button Right False") == 3 && sink.Held.Count == 0, "Existing finite mouse clicks still move once to their saved coordinates, including zero");
         using (var cancel = new CancellationTokenSource())
         {
             var clicks = 0;
-            sink = new TestSink { ButtonStateChanged = down => { if (down && ++clicks == 3) cancel.Cancel(); } };
-            await Cancelled(new MacroPlayer(sink).RunAsync([action, new() { Action = ActionKind.Text, Text = "Later row", IntervalMs = 0 }], Options(), cancel.Token));
-            Check(clicks == 3 && sink.Events.Count(value => value == "Button Left False") == 3 && sink.Held.Count == 0 && !sink.Events.Any(value => value.StartsWith("Unicode", StringComparison.Ordinal)), "Infinite clicks repeat at zero timings, stop during a press and release the button without advancing rows");
+            sink = new TestSink { ThrowOnMove = true, ButtonStateChanged = down => { if (down && ++clicks == 3) cancel.Cancel(); } };
+            await Cancelled(new MacroPlayer(sink).RunAsync([restored.Actions[0], new() { Action = ActionKind.Text, Text = "Later row", IntervalMs = 0 }], Options(), cancel.Token));
+            Check(clicks == 3 && sink.Events.Count(value => value == "Button Left False") == 3 && sink.Held.Count == 0 && !sink.Events.Any(value => value.StartsWith("Unicode", StringComparison.Ordinal)), "Infinite clicks at the current pointer never move it and release the button on stop");
         }
         using (var cancel = new CancellationTokenSource())
         {

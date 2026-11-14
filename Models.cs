@@ -15,6 +15,8 @@ public sealed class MacroAction
     public string Key { get; set; } = "A";
     public int X { get; set; }
     public int Y { get; set; }
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+    public bool UseCurrentCursorPosition { get; set; }
     public int DurationMs { get; set; } = 50;
     public int Count { get; set; } = 1;
     public int IntervalMs { get; set; } = 100;

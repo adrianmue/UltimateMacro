@@ -4,6 +4,7 @@ public sealed class ActionEditor : Form
 {
     private readonly ComboBox kind = new() { DropDownStyle = ComboBoxStyle.DropDownList, Width = 290, FormattingEnabled = true };
     private readonly ComboBox key = new() { DropDownStyle = ComboBoxStyle.DropDown, Width = 290, MaxDropDownItems = 14 };
+    private readonly CheckBox useCurrentCursor = new() { Text = "Aktuelle Mausposition verwenden", AutoSize = true };
     private readonly NumericUpDown x = MainForm.Number(-100000, 100000, 0);
     private readonly NumericUpDown y = MainForm.Number(-120000, 120000, 0);
     private readonly NumericUpDown duration = MainForm.Number(0, 86_400_000, 50);
@@ -45,7 +46,7 @@ public sealed class ActionEditor : Form
         layout.Controls.Add(new Label { Text = "Aktion konfigurieren", Font = new Font("Segoe UI", 16, FontStyle.Bold), AutoSize = true, Margin = Padding.Empty }, 0, 0);
 
         var scroll = new Panel { Dock = DockStyle.Fill, AutoScroll = true, Margin = Padding.Empty };
-        var fields = new TableLayoutPanel { Dock = DockStyle.Top, ColumnCount = 2, RowCount = 9, AutoSize = true, AutoSizeMode = AutoSizeMode.GrowAndShrink };
+        var fields = new TableLayoutPanel { Dock = DockStyle.Top, ColumnCount = 2, RowCount = 10, AutoSize = true, AutoSizeMode = AutoSizeMode.GrowAndShrink };
         fields.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 177));
         fields.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
         for (var index = 0; index < fields.RowCount; index++) fields.RowStyles.Add(new RowStyle(SizeType.AutoSize));
@@ -56,14 +57,15 @@ public sealed class ActionEditor : Form
         kind.Items.AddRange(Enum.GetValues<ActionKind>().Cast<object>().ToArray());
         AddField(fields, 0, "Art der Aktion", kind);
         AddField(fields, 1, "Taste", key);
-        AddField(fields, 2, "X-Koordinate", x);
-        AddField(fields, 3, "Y-Koordinate", y);
-        AddField(fields, 4, "Dauer (ms)", duration);
-        AddField(fields, 5, "Anzahl", count);
-        AddField(fields, 6, "Abstand (ms)", interval);
+        AddField(fields, 2, "Klickposition", useCurrentCursor);
+        AddField(fields, 3, "X-Koordinate", x);
+        AddField(fields, 4, "Y-Koordinate", y);
+        AddField(fields, 5, "Dauer (ms)", duration);
+        AddField(fields, 6, "Anzahl", count);
+        AddField(fields, 7, "Abstand (ms)", interval);
         screenPanel.Controls.AddRange([pick, cursor, imageSetup]);
-        AddField(fields, 7, "Bildschirmposition", screenPanel);
-        AddField(fields, 8, "Text", text);
+        AddField(fields, 8, "Bildschirmposition", screenPanel);
+        AddField(fields, 9, "Text", text);
         layout.Controls.Add(help, 0, 2);
 
         var buttons = new FlowLayoutPanel { Dock = DockStyle.Fill, FlowDirection = FlowDirection.RightToLeft, WrapContents = false, Padding = new Padding(0, 7, 0, 0), Margin = Padding.Empty };
@@ -85,7 +87,7 @@ public sealed class ActionEditor : Form
         };
         pick.Click += async (_, _) =>
         {
-            kind.Enabled = pick.Enabled = save.Enabled = false;
+            kind.Enabled = pick.Enabled = save.Enabled = useCurrentCursor.Enabled = false;
             for (var seconds = 3; seconds > 0; seconds--)
             {
                 pick.Text = $"Position in {seconds} s …";
@@ -96,11 +98,13 @@ public sealed class ActionEditor : Form
             x.Value = Math.Clamp(position.X, x.Minimum, x.Maximum);
             y.Value = Math.Clamp(position.Y, y.Minimum, y.Maximum);
             pick.Text = "Position in 3 s wählen";
-            kind.Enabled = pick.Enabled = save.Enabled = true;
+            kind.Enabled = pick.Enabled = save.Enabled = useCurrentCursor.Enabled = true;
         };
         cursorTimer.Tick += (_, _) => cursor.Text = $"X {Cursor.Position.X}  Y {Cursor.Position.Y}";
         cursorTimer.Start();
         Disposed += (_, _) => cursorTimer.Dispose();
+        useCurrentCursor.Checked = action.Action != ActionKind.MouseClick || action.UseCurrentCursorPosition;
+        useCurrentCursor.CheckedChanged += (_, _) => UpdateFields(false);
         kind.SelectedIndexChanged += (_, _) => { if (!UiTheme.IsApplying(this)) UpdateFields(true); };
         kind.SelectedItem = action.Action;
         UpdateFields(false);
@@ -118,20 +122,18 @@ public sealed class ActionEditor : Form
         if (kind.SelectedItem is not ActionKind action) return;
         var isKey = action is ActionKind.KeyPress or ActionKind.KeyDown or ActionKind.KeyUp or ActionKind.KeyHold or ActionKind.KeyRepeat;
         var isImage = action == ActionKind.ImageClick;
+        var isClick = action == ActionKind.MouseClick;
         var isButton = isImage || action is ActionKind.MouseClick or ActionKind.MouseDown or ActionKind.MouseUp;
         var isScroll = action == ActionKind.MouseScroll;
-        var position = (isButton && !isImage) || action == ActionKind.MouseMove;
+        var position = action is ActionKind.MouseMove or ActionKind.MouseDown or ActionKind.MouseUp || (isClick && !useCurrentCursor.Checked);
         var hasDuration = action is ActionKind.Delay or ActionKind.KeyHold or ActionKind.KeyRepeat or ActionKind.KeyPress or ActionKind.MouseMove or ActionKind.MouseClick or ActionKind.ImageClick;
         var hasCount = action is ActionKind.KeyPress or ActionKind.KeyRepeat or ActionKind.MouseClick or ActionKind.MouseScroll or ActionKind.ImageClick;
         var hasInterval = action is ActionKind.KeyPress or ActionKind.KeyRepeat or ActionKind.MouseClick or ActionKind.Text or ActionKind.ImageClick;
         var hasText = action == ActionKind.Text;
         var hasKey = isKey || isButton || isScroll;
 
-        key.Items.Clear();
-        if (isKey) key.Items.AddRange(KeyNames.EditorChoices.Cast<object>().ToArray());
-        if (isButton) key.Items.AddRange(new object[] { "Left", "Right", "Middle", "X1", "X2" });
-        if (isScroll) key.Items.AddRange(new object[] { "Vertical", "Horizontal" });
         SetField(key, hasKey, isButton ? "Maustaste" : isScroll ? "Richtung" : "Taste");
+        SetField(useCurrentCursor, isClick);
         SetField(x, position);
         SetField(y, position || isScroll, isScroll ? "Scroll-Einheiten" : "Y-Koordinate");
         SetField(duration, hasDuration);
@@ -145,6 +147,10 @@ public sealed class ActionEditor : Form
 
         if (defaults)
         {
+            key.Items.Clear();
+            if (isKey) key.Items.AddRange(KeyNames.EditorChoices.Cast<object>().ToArray());
+            if (isButton) key.Items.AddRange(new object[] { "Left", "Right", "Middle", "X1", "X2" });
+            if (isScroll) key.Items.AddRange(new object[] { "Vertical", "Horizontal" });
             key.Text = isButton ? "Left" : isScroll ? "Vertical" : "A";
             duration.Value = action is ActionKind.Delay or ActionKind.KeyHold ? 1000 : action is ActionKind.MouseMove or ActionKind.KeyRepeat ? 0 : 50;
             count.Value = 1;
@@ -160,14 +166,15 @@ public sealed class ActionEditor : Form
             ActionKind.KeyHold => "Hält die Taste für die angegebene Zeit. Dauer 0 hält sie bis zum manuellen Stopp.",
             ActionKind.KeyRepeat => "Anzahl und Dauer verteilen die Drücke über die Zeit. Ist einer der Werte 0, gilt das Intervall. Sind beide 0, wird bis zum Stopp wiederholt.",
             ActionKind.MouseMove => "Bewegt den Zeiger zu X und Y. Dauer 0 springt sofort dorthin.",
-            ActionKind.MouseClick => "Klickt an X und Y. Anzahl 0 wiederholt bis zum Stopp. Abstand ist die Pause zwischen zwei Klicks.",
+            ActionKind.MouseClick when useCurrentCursor.Checked => "Klickt dort, wo sich die Maus gerade befindet. Du kannst sie während der Wiederholung bewegen. Anzahl 0 wiederholt bis zum Stopp.",
+            ActionKind.MouseClick => "Bewegt den Zeiger zu X und Y, bevor die Klicks beginnen. Anzahl 0 wiederholt bis zum Stopp. Abstand ist die Pause zwischen zwei Klicks.",
             ActionKind.ImageClick => "Markiere das Ziel und teste es in der Vorschau. Vor jedem Klick wird neu gesucht; bei unklarem Treffer wartet das Makro.",
             ActionKind.MouseDown => "Bewegt den Zeiger zur Position und hält die Maustaste. Füge Bewegung und Loslassen hinzu, um zu ziehen.",
             ActionKind.MouseUp => "Bewegt den Zeiger zur Position und lässt die Maustaste los.",
             ActionKind.MouseScroll => "120 Einheiten entsprechen einer Stufe nach oben oder rechts; −120 scrollt in die Gegenrichtung.",
             _ => "Gibt den Text im aktiven Fenster ein. Mit Abstand 0 entfällt die zusätzliche Pause zwischen Zeichen."
         };
-        var rows = new[] { true, hasKey, position, position || isScroll, hasDuration, hasCount, hasInterval, position || isImage, hasText }.Count(visible => visible);
+        var rows = new[] { true, hasKey, isClick, position, position || isScroll, hasDuration, hasCount, hasInterval, position || isImage, hasText }.Count(visible => visible);
         ClientSize = new Size(590, Math.Max(266, 204 + rows * 35 + (hasText ? 78 : 0)));
     }
 
@@ -181,6 +188,7 @@ public sealed class ActionEditor : Form
             Result = new MacroAction
             {
                 Action = selected, Key = key.Text.Trim(), X = (int)x.Value, Y = (int)y.Value, DurationMs = (int)duration.Value,
+                UseCurrentCursorPosition = selected == ActionKind.MouseClick && useCurrentCursor.Checked,
                 Count = (int)count.Value, IntervalMs = (int)interval.Value, Text = text.Text,
                 ScanCode = selected == original.Action && key.Text.Trim() == original.Key ? original.ScanCode : 0,
                 Extended = selected == original.Action && key.Text.Trim() == original.Key && original.Extended,

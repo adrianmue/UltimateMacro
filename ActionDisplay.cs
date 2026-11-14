@@ -24,6 +24,7 @@ internal static class ActionDisplay
     {
         ActionKind.Delay => "—",
         ActionKind.MouseMove => $"X {action.X} · Y {action.Y}",
+        ActionKind.MouseClick when action.UseCurrentCursorPosition => $"{ButtonName(action.Key)} · Aktuelle Mausposition",
         ActionKind.MouseClick or ActionKind.MouseDown or ActionKind.MouseUp => $"{ButtonName(action.Key)} · X {action.X} · Y {action.Y}",
         ActionKind.MouseScroll => action.Key == "Horizontal" ? "Horizontal" : "Vertikal",
         ActionKind.Text => TextPreview(action.Text),

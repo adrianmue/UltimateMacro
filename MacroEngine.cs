@@ -95,7 +95,7 @@ public sealed class MacroPlayer
                 }
                 break;
             case ActionKind.MouseClick:
-                sink.Move(action.X, action.Y);
+                if (!action.UseCurrentCursorPosition) sink.Move(action.X, action.Y);
                 for (var count = 0L; action.Count == 0 || count < action.Count; count++)
                 {
                     token.ThrowIfCancellationRequested();
