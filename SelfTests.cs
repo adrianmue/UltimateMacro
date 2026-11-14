@@ -109,6 +109,23 @@ internal static partial class SelfTests
                     Render(main, "compact-preview.png");
                     Check(repeatList.Parent!.ClientRectangle.Contains(repeatList.Bounds) && save.Parent!.ClientRectangle.Contains(save.Bounds) &&
                         open.Parent!.ClientRectangle.Contains(open.Bounds), "Core controls fit at the minimum window size");
+                    var helpView = FindControls(main).OfType<Button>().Single(button => button.Name == "HelpView");
+                    helpView.PerformClick();
+                    var helpPage = FindControls(main).Single(control => control.Name == "HelpPage");
+                    var helpTopics = FindControls(helpPage).OfType<Button>().ToArray();
+                    var helpScroll = FindControls(helpPage).OfType<Panel>().Single(panel => panel.Name == "HelpArticleScroll");
+                    var stopShortcut = FindControls(helpPage).OfType<Label>().Single(label => label.AccessibleName == "Alles stoppen – Tastenkürzel");
+                    Check(helpTopics.Length == 6 && stopShortcut.Visible && stopShortcut.Text == "F11", "Help opens to the quick start with six topics and the active shortcuts");
+                    var firstStep = FindControls(helpScroll).OfType<Label>().Single(label => label.Visible && label.Text.StartsWith("1.  Starte", StringComparison.Ordinal));
+                    Check(firstStep.Height > firstStep.Font.Height && firstStep.PointToScreen(new Point(firstStep.Width, 0)).X <= helpScroll.PointToScreen(new Point(helpScroll.ClientSize.Width, 0)).X,
+                        "Long help steps wrap inside the reading pane at minimum width");
+                    Render(main, "help-compact-preview.png");
+                    helpTopics.Single(button => button.Text == "Wiederholen & klicken").PerformClick();
+                    Check(helpScroll.Controls.Cast<Control>().Count(article => article.Visible) == 1 && !stopShortcut.Visible &&
+                        FindControls(helpScroll).OfType<Label>().Any(label => label.Visible && label.Text.Contains("Aktuelle Mausposition verwenden", StringComparison.Ordinal)) &&
+                        !helpScroll.HorizontalScroll.Visible, "Help shows only the selected article and wraps instructions at minimum width");
+                    helpTopics.Single(button => button.Text == "Probleme lösen").PerformClick();
+                    Check(FindControls(helpScroll).OfType<Label>().Any(label => label.Visible && label.Text.Contains("Scan-Codes", StringComparison.Ordinal)), "Help troubleshooting explains how to test scan codes");
                     main.Size = fullSize;
                     settingsView.PerformClick();
                     await Task.Delay(100);
@@ -147,6 +164,10 @@ internal static partial class SelfTests
                         File.ReadAllText(Path.Combine(verification.Path, "preferences.json")) == savedPreferences && !main.Text.StartsWith('*'),
                         "Changing appearance does not change the macro or its playback settings");
                     Render(main, "settings-dark-preview.png");
+                    helpView.PerformClick();
+                    Render(main, "help-dark-preview.png");
+                    Check(helpScroll.BackColor == UiTheme.Dark.Surface && helpTopics.Single(button => button.Text == "Probleme lösen").BackColor == UiTheme.Dark.AccentSurface,
+                        "Help follows the dark palette and highlights the current topic");
                     FindControls(main).OfType<Button>().Single(button => button.Name == "ActionView").PerformClick();
                     Render(main, "dark-preview.png");
                     selector.SelectedItem = selector.Items.Cast<MacroLibraryEntry>().Single(entry => entry.Name == "Edited sample");

@@ -196,18 +196,6 @@ public sealed partial class MainForm : Form
         columns.Controls.Add(shortcuts, 2, 0);
     }
 
-    private static Panel BuildHelp()
-    {
-        var page = new Panel { Dock = DockStyle.Fill, Padding = new Padding(18) };
-        page.Controls.Add(UiTheme.Mark(new TextBox
-        {
-            Dock = DockStyle.Fill, Multiline = true, ReadOnly = true, BorderStyle = BorderStyle.None,
-            ScrollBars = ScrollBars.Vertical, Font = new Font("Segoe UI", 11),
-            Text = GuideText
-        }, UiRole.Surface));
-        return page;
-    }
-
     private void AddColumn(string title, string property, int weight) => grid.Columns.Add(new DataGridViewTextBoxColumn
     {
         HeaderText = title, DataPropertyName = property, FillWeight = weight, SortMode = DataGridViewColumnSortMode.NotSortable
@@ -734,8 +722,11 @@ public sealed partial class MainForm : Form
     private void UpdateHotkeySummary()
     {
         var options = hotkeys?.Current ?? ReadHotkeys();
-        hotkeySummary.Text = hotkeys is { IsRegistered: false } ? "Keine aktiven Tastenkürzel. Prüfe die Einstellungen."
+        var available = hotkeys is not { IsRegistered: false };
+        hotkeySummary.Text = !available ? "Keine aktiven Tastenkürzel. Prüfe die Einstellungen."
             : $"{options.Record} Aufnahme   ·   {options.StopRecording} Aufnahme beenden   ·   {options.Play} Abspielen   ·   {options.StopAll} Stopp";
+        var values = options.Values();
+        for (var index = 0; index < helpHotkeys.Length; index++) helpHotkeys[index].Text = available ? values[index] : "Nicht aktiv";
     }
 
     private void SetStatus(string message) { if (!IsDisposed) status.Text = message; }
@@ -821,38 +812,4 @@ public sealed partial class MainForm : Form
         fields.Controls.Add(input);
     }
 
-    private const string GuideText = """
-        DEIN ERSTER ABLAUF
-
-        1. Klicke auf „Aufnehmen“ (F8) und führe die gewünschten Eingaben aus.
-        2. Beende die Aufnahme mit F9 oder „Aufnahme beenden“.
-        3. Prüfe den Ablauf, gib ihm einen Namen und klicke auf „Speichern“.
-        4. Starte mit „Abspielen“ (F10) und wechsle während des Countdowns zum Zielfenster.
-        5. „Stopp“ (F11) beendet die Wiedergabe und gibt gehaltene Eingaben frei.
-
-        AKTIONEN UND WIEDERHOLUNG
-
-        „Aktion hinzufügen“ öffnet den Editor. Ein Doppelklick bearbeitet eine vorhandene Zeile.
-        Ziehe Aktionen an die gewünschte Stelle. Die Linie zeigt die Einfügeposition.
-        Das Menü „Aktionen“ enthält auch Duplizieren, Verschieben, Löschen und Aufnahme rückgängig.
-        Für F → E: „Taste tippen“ für F und danach für E hinzufügen. Bei Bedarf „Warten“ dazwischen setzen.
-        „Bis zum Stopp wiederholen“ wiederholt den ganzen Ablauf. In den Einstellungen entspricht das 0 Durchläufen.
-        Wenn nur manuell gestoppt werden soll, setze das Zeitlimit auf 0.
-        Für Moon Sweepers: Einstellungen → Wiedergabe → „Tasten als Scan-Codes senden“.
-
-        BILDZIELE
-
-        Erfasse ein Fenster, markiere den Button und wähle den Klickpunkt.
-        Die Vorschau klickt nicht. Vor jedem echten Klick sucht das Makro das Ziel neu.
-        Der Hintergrundmodus funktioniert mit kompatiblen, nicht minimierten Fenstern.
-
-        BIBLIOTHEK UND TASTENKÜRZEL
-
-        Ein Doppelklick auf ein Makro öffnet seinen Ablauf. „Importieren“ kopiert eine vorhandene JSON-Datei in die Bibliothek.
-        Unter „Mehr“ findest du den Speicherordner, Beispielmakros und die Aktualisierung der Bibliothek.
-        Per Rechtsklick auf ein Makro kannst du es umbenennen oder nach Rückfrage endgültig löschen.
-        Unter „Datei“ kannst du eine Kopie speichern. Änderungen an einem gespeicherten Makro werden über „Speichern“ übernommen.
-        Tastenkürzel lassen sich in den Einstellungen ändern. F12 ist unter Windows für Debugger reserviert.
-        Einstellungen → Darstellung: „Wie Windows“ folgt dem App-Design von Windows. Alternativ kannst du „Hell“ oder „Dunkel“ wählen.
-        """;
 }
