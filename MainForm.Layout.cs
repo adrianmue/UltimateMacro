@@ -167,8 +167,7 @@ public sealed partial class MainForm
         save.Name = "SaveMacro";
         fileBar.Controls.Add(save, 2, 0);
         fileBar.Controls.Add(MenuButton("Datei ▾", "Weitere Dateibefehle", ("Kopie speichern…", () => Guard(() => Save(true))),
-            ("Nach Updates suchen…", async () => await CheckForUpdatesAsync(manual: true)),
-            ("GitHub-Releases öffnen", () => Guard(() => OpenUpdatePage(UpdateCheck.ReleasesUrl)))), 3, 0);
+            ("Nach Updates suchen…", async () => await CheckForUpdatesAsync(manual: true))), 3, 0);
         workspace.Controls.Add(fileBar, 0, 0);
 
         var navigation = Bar();

@@ -15,21 +15,35 @@ public sealed partial class MainForm
         page.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
         page.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
 
-        var navigation = UiTheme.Mark(new Panel { Dock = DockStyle.Fill, Padding = new Padding(7, 9, 7, 7), Margin = new Padding(0, 0, 9, 0) }, UiRole.Soft);
+        var navigation = UiTheme.Mark(new TableLayoutPanel
+        {
+            Dock = DockStyle.Fill, ColumnCount = 1, RowCount = 2,
+            Padding = new Padding(7, 9, 7, 7), Margin = new Padding(0, 0, 9, 0)
+        }, UiRole.Soft);
+        navigation.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
+        navigation.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+        var topicViewport = new Panel { Dock = DockStyle.Fill, AutoScroll = true, Margin = Padding.Empty };
         var topics = HelpStack();
         topics.Controls.Add(UiTheme.Mark(HelpLabel("Themen", new Font(Font, FontStyle.Bold), new Padding(9, 2, 0, 8)), UiRole.Muted));
+        topicViewport.Controls.Add(topics);
         var updates = HelpStack();
-        updates.Dock = DockStyle.Bottom;
-        updates.Padding = new Padding(2, 10, 2, 2);
+        updates.Dock = DockStyle.Fill;
+        updates.Padding = new Padding(2, 6, 2, 2);
         var version = UiTheme.Mark(HelpLabel($"Version {UpdateCheck.InstalledVersion.ToString(3)}", new Font(Font, FontStyle.Bold), new Padding(7, 0, 0, 7)), UiRole.Muted);
         version.Name = "HelpInstalledVersion";
         ConfigureButton(helpUpdateButton, "Nach Updates suchen", async () => await CheckForUpdatesAsync(manual: true));
-        helpUpdateButton.Padding = new Padding(4, 1, 4, 1);
-        helpUpdateButton.Dock = DockStyle.Fill;
-        helpUpdateButton.Margin = Padding.Empty;
-        updates.Controls.AddRange([version, helpUpdateButton]);
-        navigation.Controls.Add(topics);
-        navigation.Controls.Add(updates);
+        var releases = Button("GitHub-Releases öffnen", () => Guard(() => OpenUpdatePage(UpdateCheck.ReleasesUrl)));
+        releases.Name = "HelpOpenGitHubReleases";
+        foreach (var action in new[] { helpUpdateButton, releases })
+        {
+            action.Padding = new Padding(4, 1, 4, 1);
+            action.MinimumSize = new Size(0, 32);
+            action.Dock = DockStyle.Fill;
+            action.Margin = new Padding(0, 0, 0, 3);
+        }
+        updates.Controls.AddRange([version, helpUpdateButton, releases]);
+        navigation.Controls.Add(topicViewport, 0, 0);
+        navigation.Controls.Add(updates, 0, 1);
         var scroll = UiTheme.Mark(new Panel { Name = "HelpArticleScroll", Dock = DockStyle.Fill, AutoScroll = true, Margin = Padding.Empty }, UiRole.Surface);
         scroll.Padding = new Padding(0, 0, SystemInformation.VerticalScrollBarWidth, 0);
         page.Controls.Add(navigation, 0, 0);
@@ -53,7 +67,8 @@ public sealed partial class MainForm
             button.Dock = DockStyle.Fill;
             button.TextAlign = ContentAlignment.MiddleLeft;
             button.Padding = new Padding(8, 0, 4, 0);
-            button.Margin = new Padding(0, 0, 0, 4);
+            button.MinimumSize = new Size(0, 32);
+            button.Margin = new Padding(0, 0, 0, 3);
             topics.Controls.Add(button);
             buttons.Add(button);
             articleLabels.Add(article.Content, AllControls(article.Content).OfType<Label>().ToArray());
