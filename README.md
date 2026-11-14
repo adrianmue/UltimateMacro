@@ -9,7 +9,7 @@ A portable Windows desktop macro recorder with a graphical action editor.
 
 Keep `Examples` beside the executable. When updating an existing copy, close the app, then extract the new ZIP into the same folder. Keep your `Recordings` folder and settings files to carry over your saved macros and preferences.
 
-Ultimate Macro checks GitHub for a newer Windows package when it starts. The **Hilfe** tab shows the installed version and offers **Nach Updates suchen**. You can also check from **Datei**. Confirm the update to download and verify the ZIP, replace the executable, and restart. Your recordings and settings remain in place. For a manual download, choose **Hilfe → GitHub-Releases öffnen**.
+Ultimate Macro checks GitHub for a newer Windows package when it starts. The **Hilfe** tab shows the installed version and offers **Nach Updates suchen**. Confirm the update to download and verify the ZIP, replace the executable, and restart. Your recordings and settings remain in place. For a manual download, choose **Hilfe → GitHub-Releases öffnen**.
 
 Choose **Wie Windows**, **Hell**, or **Dunkel** under **Einstellungen → Darstellung**. **Wie Windows** is the default and follows the Windows app theme even while Ultimate Macro is running. Explicit light/dark choices, including those saved in earlier releases, override Windows. The choice is saved separately from your macros in `appearance.json` beside the executable.
 

@@ -127,8 +127,8 @@ internal static partial class SelfTests
                     var helpSidebar = helpReleases.Parent!.Parent!;
                     Check(helpReleases.Visible && helpReleases.Parent == helpVersion.Parent && helpReleases.Top > helpUpdate.Top &&
                         helpSidebar.RectangleToScreen(helpSidebar.ClientRectangle).Contains(helpReleases.RectangleToScreen(helpReleases.ClientRectangle)) &&
-                        fileMenu.Items.Cast<ToolStripItem>().All(item => item.Text != helpReleases.Text),
-                        "The GitHub releases command sits with the version in Help and has moved out of the File menu");
+                        fileMenu.Items.Cast<ToolStripItem>().Select(item => item.Text).SequenceEqual(["Kopie speichern…"]),
+                        "The GitHub releases command sits with the version in Help, and File offers only saving a copy");
                     var firstStep = FindControls(helpScroll).OfType<Label>().Single(label => label.Visible && label.Text.StartsWith("1.  Starte", StringComparison.Ordinal));
                     Check(firstStep.Height > firstStep.Font.Height && firstStep.PointToScreen(new Point(firstStep.Width, 0)).X <= helpScroll.PointToScreen(new Point(helpScroll.ClientSize.Width, 0)).X,
                         "Long help steps wrap inside the reading pane at minimum width");
