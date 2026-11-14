@@ -1,4 +1,4 @@
-param([switch]$Verify)
+param([switch]$Verify, [switch]$Package)
 $ErrorActionPreference = 'Stop'
 Set-Location -LiteralPath $PSScriptRoot
 $env:DOTNET_CLI_HOME = Join-Path $PSScriptRoot '.build-home'
@@ -14,5 +14,13 @@ if ($Verify) {
     $verification.WaitForExit()
     Get-Content -LiteralPath (Join-Path $PSScriptRoot 'dist\self-test-results.txt')
     if ($verification.ExitCode -ne 0) { throw 'Verification failed.' }
+}
+if ($Package) {
+    $releaseDirectory = Join-Path $PSScriptRoot 'release'
+    $null = New-Item -Path $releaseDirectory -ItemType Directory -Force
+    $archivePath = Join-Path $releaseDirectory 'UltimateMacro-Windows-x64.zip'
+    $packageFiles = @('dist\UltimateMacro.exe', 'dist\README.md', 'dist\Examples')
+    Compress-Archive -LiteralPath $packageFiles -DestinationPath $archivePath -Force
+    Write-Host 'Ready: release\UltimateMacro-Windows-x64.zip'
 }
 Write-Host 'Ready: dist\UltimateMacro.exe'

@@ -4,9 +4,10 @@ A portable Windows desktop macro recorder with a graphical action editor.
 
 ## Run
 
-Open **dist/UltimateMacro.exe**. No installer, Visual Studio, or separate .NET installation is required for the standalone release. Built for Windows 10/11 on x64 PCs.
+1. Sign in to GitHub with an account that has access to this repository. Download [UltimateMacro-Windows-x64.zip](https://github.com/adrianmue/UltimateMacro/releases/latest/download/UltimateMacro-Windows-x64.zip) from the [latest release](https://github.com/adrianmue/UltimateMacro/releases/latest).
+2. Extract the ZIP into a writable folder, then open **UltimateMacro.exe**. The app runs on Windows 10/11 x64 without an installer, Visual Studio, or a separate .NET installation.
 
-Keep the `Examples` folder and this guide beside the executable. Copy the whole `dist` folder to move the app, including `Recordings` to keep your saved macros. The executable can also run on its own; settings are saved to `preferences.json` beside it. Use a writable folder such as your Desktop or Documents.
+Keep `Examples` beside the executable. When updating an existing copy, close the app, then extract the new ZIP into the same folder. Keep your `Recordings` folder and settings files to carry over your saved macros and preferences.
 
 Choose **Wie Windows**, **Hell**, or **Dunkel** under **Einstellungen → Darstellung**. **Wie Windows** is the default and follows the Windows app theme even while Ultimate Macro is running. Explicit light/dark choices, including those saved in earlier releases, override Windows. The choice is saved separately from your macros in `appearance.json` beside the executable.
 
@@ -152,6 +153,15 @@ Recording is enabled only when explicitly started. Recorded keystrokes may conta
 
 ## Build from source
 
-Requires the .NET 10 SDK on Windows. Run `Build.ps1` from PowerShell. This downloads official Microsoft runtime packages as needed and publishes a self-contained x64 single-file executable in `dist`.
+To build your own copy on Windows, install Git and the .NET 10 SDK. In PowerShell, authenticate to the private repository when Git prompts you and run:
+
+```powershell
+git clone https://github.com/adrianmue/UltimateMacro.git
+cd UltimateMacro
+powershell -NoProfile -ExecutionPolicy Bypass -File .\Build.ps1
+.\dist\UltimateMacro.exe
+```
+
+The build creates `dist` in the cloned folder. To also create the portable ZIP in `release`, pass `-Package` to `Build.ps1`.
 
 To run the built-in verification suite, use `UltimateMacro.exe --self-test`. It verifies action validation, named library save/load, image matching and repeated clicks, file round trips, count/timing modes, cancellation and input cleanup. Results are saved as `self-test-results.txt` beside the executable. Run while the desktop is unlocked and do not change focus during the brief native-input test. Add `--skip-native` to exclude global keyboard and mouse input. Add `--test-capture` to also verify capture, preview and window-local clicks in dedicated foreground and covered test windows. Library/UI tests use isolated temporary files and preserve your recordings and preferences.
