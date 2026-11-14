@@ -11,7 +11,7 @@ public sealed partial class MainForm
             Name = "HelpPage", Dock = DockStyle.Fill, ColumnCount = 2, RowCount = 1,
             Padding = new Padding(5, 7, 6, 5), Margin = Padding.Empty
         }, UiRole.Canvas);
-        page.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 183));
+        page.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 215));
         page.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
         page.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
 
@@ -20,13 +20,16 @@ public sealed partial class MainForm
             Dock = DockStyle.Fill, ColumnCount = 1, RowCount = 2,
             Padding = new Padding(7, 9, 7, 7), Margin = new Padding(0, 0, 9, 0)
         }, UiRole.Soft);
+        navigation.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
         navigation.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
         navigation.RowStyles.Add(new RowStyle(SizeType.AutoSize));
         var topicViewport = new Panel { Dock = DockStyle.Fill, AutoScroll = true, Margin = Padding.Empty };
         var topics = HelpStack();
+        topics.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
         topics.Controls.Add(UiTheme.Mark(HelpLabel("Themen", new Font(Font, FontStyle.Bold), new Padding(9, 2, 0, 8)), UiRole.Muted));
         topicViewport.Controls.Add(topics);
         var updates = HelpStack();
+        updates.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
         updates.Dock = DockStyle.Fill;
         updates.Padding = new Padding(2, 6, 2, 2);
         var version = UiTheme.Mark(HelpLabel($"Version {UpdateCheck.InstalledVersion.ToString(3)}", new Font(Font, FontStyle.Bold), new Padding(7, 0, 0, 7)), UiRole.Muted);

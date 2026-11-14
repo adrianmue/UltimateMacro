@@ -124,8 +124,9 @@ internal static partial class SelfTests
                         helpPage.RectangleToScreen(helpPage.ClientRectangle).Contains(helpUpdate.RectangleToScreen(helpUpdate.ClientRectangle)),
                         "Help shows the installed version and update command at minimum window size");
                     var fileMenu = FindControls(main).OfType<Button>().Single(button => button.AccessibleName == "Weitere Dateibefehle").ContextMenuStrip!;
+                    var helpSidebar = helpReleases.Parent!.Parent!;
                     Check(helpReleases.Visible && helpReleases.Parent == helpVersion.Parent && helpReleases.Top > helpUpdate.Top &&
-                        helpPage.RectangleToScreen(helpPage.ClientRectangle).Contains(helpReleases.RectangleToScreen(helpReleases.ClientRectangle)) &&
+                        helpSidebar.RectangleToScreen(helpSidebar.ClientRectangle).Contains(helpReleases.RectangleToScreen(helpReleases.ClientRectangle)) &&
                         fileMenu.Items.Cast<ToolStripItem>().All(item => item.Text != helpReleases.Text),
                         "The GitHub releases command sits with the version in Help and has moved out of the File menu");
                     var firstStep = FindControls(helpScroll).OfType<Label>().Single(label => label.Visible && label.Text.StartsWith("1.  Starte", StringComparison.Ordinal));
