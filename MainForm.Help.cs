@@ -18,7 +18,18 @@ public sealed partial class MainForm
         var navigation = UiTheme.Mark(new Panel { Dock = DockStyle.Fill, Padding = new Padding(7, 9, 7, 7), Margin = new Padding(0, 0, 9, 0) }, UiRole.Soft);
         var topics = HelpStack();
         topics.Controls.Add(UiTheme.Mark(HelpLabel("Themen", new Font(Font, FontStyle.Bold), new Padding(9, 2, 0, 8)), UiRole.Muted));
+        var updates = HelpStack();
+        updates.Dock = DockStyle.Bottom;
+        updates.Padding = new Padding(2, 10, 2, 2);
+        var version = UiTheme.Mark(HelpLabel($"Version {UpdateCheck.InstalledVersion.ToString(3)}", new Font(Font, FontStyle.Bold), new Padding(7, 0, 0, 7)), UiRole.Muted);
+        version.Name = "HelpInstalledVersion";
+        ConfigureButton(helpUpdateButton, "Nach Updates suchen", async () => await CheckForUpdatesAsync(manual: true));
+        helpUpdateButton.Padding = new Padding(4, 1, 4, 1);
+        helpUpdateButton.Dock = DockStyle.Fill;
+        helpUpdateButton.Margin = Padding.Empty;
+        updates.Controls.AddRange([version, helpUpdateButton]);
         navigation.Controls.Add(topics);
+        navigation.Controls.Add(updates);
         var scroll = UiTheme.Mark(new Panel { Name = "HelpArticleScroll", Dock = DockStyle.Fill, AutoScroll = true, Margin = Padding.Empty }, UiRole.Surface);
         scroll.Padding = new Padding(0, 0, SystemInformation.VerticalScrollBarWidth, 0);
         page.Controls.Add(navigation, 0, 0);

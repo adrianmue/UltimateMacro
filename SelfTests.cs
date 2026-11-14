@@ -113,10 +113,15 @@ internal static partial class SelfTests
                     var helpView = FindControls(main).OfType<Button>().Single(button => button.Name == "HelpView");
                     helpView.PerformClick();
                     var helpPage = FindControls(main).Single(control => control.Name == "HelpPage");
-                    var helpTopics = FindControls(helpPage).OfType<Button>().ToArray();
+                    var helpUpdate = FindControls(helpPage).OfType<Button>().Single(button => button.Name == "HelpCheckForUpdates");
+                    var helpVersion = FindControls(helpPage).OfType<Label>().Single(label => label.Name == "HelpInstalledVersion");
+                    var helpTopics = FindControls(helpPage).OfType<Button>().Where(button => button != helpUpdate).ToArray();
                     var helpScroll = FindControls(helpPage).OfType<Panel>().Single(panel => panel.Name == "HelpArticleScroll");
                     var stopShortcut = FindControls(helpPage).OfType<Label>().Single(label => label.AccessibleName == "Alles stoppen – Tastenkürzel");
                     Check(helpTopics.Length == 6 && stopShortcut.Visible && stopShortcut.Text == "F11", "Help opens to the quick start with six topics and the active shortcuts");
+                    Check(helpVersion.Visible && helpVersion.Text == $"Version {UpdateCheck.InstalledVersion.ToString(3)}" && helpUpdate.Visible && helpUpdate.Enabled &&
+                        helpPage.RectangleToScreen(helpPage.ClientRectangle).Contains(helpUpdate.RectangleToScreen(helpUpdate.ClientRectangle)),
+                        "Help shows the installed version and update command at minimum window size");
                     var firstStep = FindControls(helpScroll).OfType<Label>().Single(label => label.Visible && label.Text.StartsWith("1.  Starte", StringComparison.Ordinal));
                     Check(firstStep.Height > firstStep.Font.Height && firstStep.PointToScreen(new Point(firstStep.Width, 0)).X <= helpScroll.PointToScreen(new Point(helpScroll.ClientSize.Width, 0)).X,
                         "Long help steps wrap inside the reading pane at minimum width");
@@ -127,6 +132,7 @@ internal static partial class SelfTests
                         !helpScroll.HorizontalScroll.Visible, "Help shows only the selected article and wraps instructions at minimum width");
                     helpTopics.Single(button => button.Text == "Probleme lösen").PerformClick();
                     Check(FindControls(helpScroll).OfType<Label>().Any(label => label.Visible && label.Text.Contains("Scan-Codes", StringComparison.Ordinal)), "Help troubleshooting explains how to test scan codes");
+                    Check(helpVersion.Visible && helpUpdate.Visible, "Version and update command remain available when navigating help topics");
                     main.Size = fullSize;
                     settingsView.PerformClick();
                     await Task.Delay(100);

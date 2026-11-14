@@ -5,12 +5,15 @@ namespace UltimateMacro;
 public sealed partial class MainForm
 {
     private readonly Button updateButton = Button("Update verfügbar");
+    private readonly Button helpUpdateButton = new PaletteButton { Name = "HelpCheckForUpdates" };
     private readonly CancellationTokenSource updateLifetime = new();
     private UpdateResult? updateResult;
     private bool checkingUpdates;
     private bool showUpdateCheckResult;
     private bool installingUpdate;
     private UpdateInstall? pendingUpdate;
+
+    private void RefreshUpdateButtons() => helpUpdateButton.Enabled = updateButton.Enabled = !Busy && !installingUpdate;
 
     private async Task CheckForUpdatesAsync(bool manual)
     {
@@ -65,7 +68,7 @@ public sealed partial class MainForm
     private async Task InstallUpdateAsync(UpdatePackage package)
     {
         installingUpdate = true;
-        updateButton.Enabled = false;
+        RefreshUpdateButtons();
         SetStatus($"Lade Ultimate Macro {package.Version} herunter …");
         try
         {
@@ -95,7 +98,7 @@ public sealed partial class MainForm
         {
             installingUpdate = false;
             pendingUpdate = null;
-            if (!IsDisposed) updateButton.Enabled = !Busy;
+            if (!IsDisposed) RefreshUpdateButtons();
         }
     }
 

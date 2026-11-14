@@ -727,7 +727,7 @@ public sealed partial class MainForm : Form
         fileBar.Enabled = editBar.Enabled = settingsTab.Enabled = !Busy;
         libraryBar.Enabled = !Busy;
         grid.Enabled = !Busy;
-        updateButton.Enabled = !Busy && !installingUpdate;
+        RefreshUpdateButtons();
         stopButton.Text = recordingSession ? "■  Aufnahme beenden" : "■  Stopp";
         stopButton.Enabled = Busy;
         UiTheme.StyleButton(stopButton, Palette);
