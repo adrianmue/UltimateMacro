@@ -75,7 +75,8 @@ internal sealed class UpdateInstall : IDisposable
         await using (var output = new FileStream(path, FileMode.CreateNew, FileAccess.Write, FileShare.None, 81920, useAsync: true))
             await input.CopyToAsync(output, cancellation).ConfigureAwait(false);
         var actual = FileVersionInfo.GetVersionInfo(path);
-        if (actual.ProductVersion != version.ToString(3) || actual.OriginalFilename != "UltimateMacro.dll")
+        if (actual.ProductMajorPart != version.Major || actual.ProductMinorPart != version.Minor ||
+            actual.ProductBuildPart != version.Build || actual.OriginalFilename != "UltimateMacro.dll")
             throw new InvalidDataException("Die EXE passt nicht zur angekündigten Version.");
     }
 
