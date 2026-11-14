@@ -7,9 +7,11 @@
     <Nullable>enable</Nullable>
     <AssemblyName>UltimateMacro</AssemblyName>
     <ApplicationHighDpiMode>PerMonitorV2</ApplicationHighDpiMode>
-    <Version>1.4.6</Version>
+    <ApplicationIcon>Assets\UltimateMacro.ico</ApplicationIcon>
+    <Version>1.4.7</Version>
   </PropertyGroup>
   <ItemGroup>
+    <EmbeddedResource Include="Assets\UltimateMacro.ico" LogicalName="UltimateMacro.UltimateMacro.ico" />
     <None Update="Examples\*.json" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
   </ItemGroup>
 </Project>

@@ -7,6 +7,7 @@ namespace UltimateMacro;
 
 public sealed partial class MainForm : Form
 {
+    private static readonly Icon appIcon = new(typeof(MainForm), "UltimateMacro.ico");
     private readonly BindingList<MacroAction> actions = [];
     private readonly BindingSource source = new();
     private readonly ActionGrid grid = new();
@@ -81,6 +82,7 @@ public sealed partial class MainForm : Form
         preferencesPath = Path.Combine(applicationDirectory, "preferences.json");
         appearancePath = Path.Combine(applicationDirectory, "appearance.json");
         Text = "Ultimate Macro";
+        Icon = appIcon;
         Font = new Font("Segoe UI", 10);
         Size = new Size(1260, 850);
         MinimumSize = new Size(1000, 700);
