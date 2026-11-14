@@ -25,7 +25,7 @@ public sealed partial class MainForm
         var footer = new TableLayoutPanel { Dock = DockStyle.Fill, ColumnCount = 2, RowCount = 2, Padding = new Padding(0, 7, 0, 0), Margin = Padding.Empty };
         footer.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 76));
         footer.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 24));
-        footer.RowStyles.Add(new RowStyle(SizeType.Absolute, 29));
+        footer.RowStyles.Add(new RowStyle(SizeType.Absolute, 31));
         footer.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
         status.Dock = hotkeySummary.Dock = cursorLabel.Dock = DockStyle.Fill;
         status.UseMnemonic = false;
@@ -37,7 +37,12 @@ public sealed partial class MainForm
         hotkeySummary.AutoEllipsis = true;
         cursorLabel.TextAlign = ContentAlignment.TopRight;
         footer.Controls.Add(status, 0, 0);
-        footer.SetColumnSpan(status, 2);
+        updateButton.Visible = false;
+        updateButton.Anchor = AnchorStyles.Right;
+        updateButton.MinimumSize = new Size(0, 27);
+        updateButton.Margin = Padding.Empty;
+        updateButton.Click += async (_, _) => await ShowUpdateResultAsync();
+        footer.Controls.Add(updateButton, 1, 0);
         footer.Controls.Add(hotkeySummary, 0, 1);
         footer.Controls.Add(cursorLabel, 1, 1);
         root.Controls.Add(footer, 0, 2);
@@ -161,7 +166,9 @@ public sealed partial class MainForm
         var save = Button("Speichern", () => Guard(() => Save(false)));
         save.Name = "SaveMacro";
         fileBar.Controls.Add(save, 2, 0);
-        fileBar.Controls.Add(MenuButton("Datei ▾", "Weitere Dateibefehle", ("Kopie speichern…", () => Guard(() => Save(true)))), 3, 0);
+        fileBar.Controls.Add(MenuButton("Datei ▾", "Weitere Dateibefehle", ("Kopie speichern…", () => Guard(() => Save(true))),
+            ("Nach Updates suchen…", async () => await CheckForUpdatesAsync(manual: true)),
+            ("GitHub-Releases öffnen", () => Guard(() => OpenUpdatePage(UpdateCheck.ReleasesUrl)))), 3, 0);
         workspace.Controls.Add(fileBar, 0, 0);
 
         var navigation = Bar();

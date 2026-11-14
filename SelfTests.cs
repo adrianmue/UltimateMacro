@@ -21,6 +21,7 @@ internal static partial class SelfTests
             try
             {
                 TestModels();
+                await TestUpdates();
                 TestActionOrder();
                 TestLibrary();
                 await TestImageTargets();
@@ -593,6 +594,38 @@ internal static partial class SelfTests
         foreach (var invalid in new[] { "", "   ", "../escape", "..\\escape", "C:\\outside", "CON", "con.txt", "LPT1", "name.", new string('a', 121) })
             ExpectFailure(() => library.GetPath(invalid), $"Invalid library name rejected: {invalid}");
         Check(MacroFiles.Parse("{\"Version\":1,\"Actions\":[]}").Name == "", "Older unnamed macro files remain compatible");
+    }
+
+    private static async Task TestUpdates()
+    {
+        var installed = new Version(1, 4, 12, 0);
+        var available = new Version(1, 4, 13);
+        var download = UpdateCheck.DownloadUrl(available);
+        var digest = new string('a', 64);
+        var release = $$"""
+            {"tag_name":"v1.4.13","draft":false,"prerelease":false,"assets":[{"name":"UltimateMacro-Windows-x64.zip","state":"uploaded","size":100,"browser_download_url":"{{download}}","digest":"sha256:{{digest}}"}]}
+            """;
+        Check(UpdateCheck.ReadRelease(release, installed) == new UpdateResult(UpdateStatus.Available, new UpdatePackage(available, 100, digest)),
+            "Updates detect a newer stable Windows release and read its checksum");
+        Check(UpdateCheck.ReadRelease(release.Replace(digest, "invalid"), installed).Package is { Sha256: null },
+            "A package without a usable checksum is available manually");
+        Check(UpdateCheck.ReadRelease(release, new Version(1, 4, 13, 0)).Status == UpdateStatus.Current &&
+            UpdateCheck.ReadRelease(release, new Version(2, 0, 0)).Status == UpdateStatus.Current, "Updates ignore the current version and older releases");
+        Check(UpdateCheck.ReadRelease(release.Replace("\"prerelease\":false", "\"prerelease\":true"), installed).Status == UpdateStatus.NoRelease &&
+            UpdateCheck.ReadRelease(release.Replace(download, "https://example.com/file.zip"), installed).Status == UpdateStatus.NoRelease &&
+            UpdateCheck.ReadRelease("{}", installed).Status == UpdateStatus.Unavailable, "Updates reject prereleases, unexpected downloads and invalid metadata");
+        using var folder = new VerificationDirectory();
+        using var zip = new MemoryStream();
+        using (var archive = new System.IO.Compression.ZipArchive(zip, System.IO.Compression.ZipArchiveMode.Create, leaveOpen: true))
+        using (var writer = new StreamWriter(archive.CreateEntry("UltimateMacro.exe").Open()))
+            writer.Write("Not an executable");
+        zip.Position = 0;
+        try
+        {
+            await UpdateInstall.ExtractExecutableAsync(zip, Path.Combine(folder.Path, "new.exe"), available, CancellationToken.None);
+            throw new Exception("Invalid update executable was accepted.");
+        }
+        catch (InvalidDataException) { Check(true, "Updates reject an executable that does not match the release"); }
     }
 
     private static async Task TestMouseClickRepetition()

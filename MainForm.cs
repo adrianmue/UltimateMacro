@@ -73,9 +73,9 @@ public sealed partial class MainForm : Form
     private bool usesGlobalPlaybackInput;
     private string? imageTargetStatus;
 
-    public MainForm(string? applicationDirectory = null) : this(applicationDirectory, UiTheme.WindowsAppsUseDarkMode) { }
+    public MainForm(string? applicationDirectory = null) : this(applicationDirectory, UiTheme.WindowsAppsUseDarkMode, checkUpdatesOnStartup: true) { }
 
-    internal MainForm(string? applicationDirectory, Func<bool> windowsUsesDarkMode)
+    internal MainForm(string? applicationDirectory, Func<bool> windowsUsesDarkMode, bool checkUpdatesOnStartup = false)
     {
         this.windowsUsesDarkMode = windowsUsesDarkMode;
         applicationDirectory ??= AppContext.BaseDirectory;
@@ -124,18 +124,19 @@ public sealed partial class MainForm : Form
             StopRecording();
             MessageBox.Show(this, "Die Aufnahme wurde bei 200.000 Aktionen beendet. Speichere sie, bevor du weitermachst.", "Aufnahmelimit");
         });
-        Shown += (_, _) =>
+        Shown += async (_, _) =>
         {
             hotkeys = new HotkeyRegistration(Handle);
             try { hotkeys.Apply(ReadHotkeys()); SetStatus("Bereit"); }
             catch (Exception error) { ShowError(error); SelectWorkspace(settingsTab); }
             UpdateHotkeySummary();
             Guard(() => RefreshLibrary());
+            if (checkUpdatesOnStartup) await CheckForUpdatesAsync(manual: false);
         };
         timer.Tick += (_, _) => RefreshStatus();
         timer.Start();
         FormClosing += OnClosing;
-        FormClosed += (_, _) => { timer.Dispose(); recorder.Dispose(); hotkeys?.Dispose(); playbackCancellation?.Dispose(); };
+        FormClosed += (_, _) => { updateLifetime.Cancel(); updateLifetime.Dispose(); timer.Dispose(); recorder.Dispose(); hotkeys?.Dispose(); playbackCancellation?.Dispose(); };
         KeyDown += (_, args) =>
         {
             if (args.Control && args.KeyCode == Keys.S) { args.SuppressKeyPress = true; Guard(() => Save(false)); }
@@ -697,6 +698,7 @@ public sealed partial class MainForm : Form
             var document = ReadDocument();
             MacroFiles.ValidateOptions(document);
             SavePreferences(document);
+            pendingUpdate?.InstallAfterExit();
             closing = true;
         }
         catch (Exception error) { args.Cancel = true; ShowError(error); }
@@ -725,6 +727,7 @@ public sealed partial class MainForm : Form
         fileBar.Enabled = editBar.Enabled = settingsTab.Enabled = !Busy;
         libraryBar.Enabled = !Busy;
         grid.Enabled = !Busy;
+        updateButton.Enabled = !Busy && !installingUpdate;
         stopButton.Text = recordingSession ? "■  Aufnahme beenden" : "■  Stopp";
         stopButton.Enabled = Busy;
         UiTheme.StyleButton(stopButton, Palette);

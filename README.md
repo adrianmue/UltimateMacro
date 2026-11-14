@@ -4,10 +4,12 @@ A portable Windows desktop macro recorder with a graphical action editor.
 
 ## Run
 
-1. Sign in to GitHub with an account that has access to this repository. Download [UltimateMacro-Windows-x64.zip](https://github.com/adrianmue/UltimateMacro/releases/latest/download/UltimateMacro-Windows-x64.zip) from the [latest release](https://github.com/adrianmue/UltimateMacro/releases/latest).
+1. Download [UltimateMacro-Windows-x64.zip](https://github.com/adrianmue/UltimateMacro/releases/latest/download/UltimateMacro-Windows-x64.zip) from the [latest release](https://github.com/adrianmue/UltimateMacro/releases/latest).
 2. Extract the ZIP into a writable folder, then open **UltimateMacro.exe**. The app runs on Windows 10/11 x64 without an installer, Visual Studio, or a separate .NET installation.
 
 Keep `Examples` beside the executable. When updating an existing copy, close the app, then extract the new ZIP into the same folder. Keep your `Recordings` folder and settings files to carry over your saved macros and preferences.
+
+Ultimate Macro checks GitHub for a newer Windows package when it starts. You can also choose **Datei → Nach Updates suchen…**. Confirm the update to download and verify the ZIP, replace the executable, and restart. Your recordings and settings remain in place. If the app cannot install the update, download it via **Datei → GitHub-Releases öffnen**.
 
 Choose **Wie Windows**, **Hell**, or **Dunkel** under **Einstellungen → Darstellung**. **Wie Windows** is the default and follows the Windows app theme even while Ultimate Macro is running. Explicit light/dark choices, including those saved in earlier releases, override Windows. The choice is saved separately from your macros in `appearance.json` beside the executable.
 
@@ -153,7 +155,7 @@ Recording is enabled only when explicitly started. Recorded keystrokes may conta
 
 ## Build from source
 
-To build your own copy on Windows, install Git and the .NET 10 SDK. In PowerShell, authenticate to the private repository when Git prompts you and run:
+To build your own copy on Windows, install Git and the .NET 10 SDK. In PowerShell, run:
 
 ```powershell
 git clone https://github.com/adrianmue/UltimateMacro.git
