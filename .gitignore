@@ -1,0 +1,12 @@
+bin/
+obj/
+dist/
+release/
+.build-home/
+.packages/
+Recordings/
+*.lnk
+*.user
+preferences.json
+appearance.json
+self-test-results.txt
