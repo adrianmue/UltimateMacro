@@ -93,17 +93,6 @@ internal static class UiTheme
             else if (control is TextBoxBase or ComboBox or NumericUpDown) control.BackColor = palette.Input;
         }
         if (control is DataGridView grid) StyleGrid(grid, palette);
-        if (control is ComboBox combo)
-        {
-            var selectedIndex = combo.SelectedIndex;
-            var typedText = combo.Text;
-            combo.DrawItem -= DrawComboItem;
-            combo.FlatStyle = palette.IsDark ? FlatStyle.Flat : FlatStyle.Standard;
-            combo.DrawMode = palette.IsDark ? DrawMode.OwnerDrawFixed : DrawMode.Normal;
-            if (palette.IsDark) combo.DrawItem += DrawComboItem;
-            if (combo.SelectedIndex != selectedIndex) combo.SelectedIndex = selectedIndex;
-            if (combo.DropDownStyle != ComboBoxStyle.DropDownList && combo.Text != typedText) combo.Text = typedText;
-        }
         if (control.ContextMenuStrip is { } menu && menus.Add(menu))
         {
             menu.Renderer = new ToolStripProfessionalRenderer(new MenuColors(palette));
@@ -112,19 +101,6 @@ internal static class UiTheme
             foreach (ToolStripItem item in menu.Items) item.ForeColor = palette.Ink;
         }
         foreach (Control child in control.Controls) ApplyTree(child, palette, menus);
-    }
-
-    private static void DrawComboItem(object? sender, DrawItemEventArgs args)
-    {
-        if (sender is not ComboBox combo) return;
-        var selected = (args.State & DrawItemState.Selected) != 0 && (args.State & DrawItemState.ComboBoxEdit) == 0;
-        using var fill = new SolidBrush(selected ? Dark.AccentSurface : Dark.Input);
-        args.Graphics.FillRectangle(fill, args.Bounds);
-        var text = args.Index >= 0 && args.Index < combo.Items.Count ? combo.GetItemText(combo.Items[args.Index]) : combo.Text;
-        var bounds = Rectangle.Inflate(args.Bounds, -3, 0);
-        TextRenderer.DrawText(args.Graphics, text, combo.Font, bounds, selected ? Dark.AccentText : Dark.Ink,
-            TextFormatFlags.Left | TextFormatFlags.VerticalCenter | TextFormatFlags.SingleLine | TextFormatFlags.NoPrefix | TextFormatFlags.EndEllipsis);
-        args.DrawFocusRectangle();
     }
 
     private static void StyleGrid(DataGridView grid, UiPalette palette)
@@ -170,6 +146,29 @@ internal static class UiTheme
         public override Color MenuItemSelectedGradientEnd => palette.AccentSurface;
         public override Color SeparatorDark => palette.Line;
         public override Color SeparatorLight => palette.Surface;
+    }
+}
+
+internal sealed class PaletteComboBox : ComboBox
+{
+    public PaletteComboBox()
+    {
+        // Changing DrawMode on a live ComboBox recreates its native window.
+        FlatStyle = FlatStyle.Flat;
+        DrawMode = DrawMode.OwnerDrawFixed;
+    }
+
+    protected override void OnDrawItem(DrawItemEventArgs args)
+    {
+        var palette = FindForm() is { } form ? UiTheme.Current(form) : UiTheme.Light;
+        var selected = (args.State & DrawItemState.Selected) != 0 && (args.State & DrawItemState.ComboBoxEdit) == 0;
+        using var fill = new SolidBrush(selected ? palette.AccentSurface : palette.Input);
+        args.Graphics.FillRectangle(fill, args.Bounds);
+        var text = args.Index >= 0 && args.Index < Items.Count ? GetItemText(Items[args.Index]) : Text;
+        var bounds = Rectangle.Inflate(args.Bounds, -3, 0);
+        TextRenderer.DrawText(args.Graphics, text, Font, bounds, !Enabled ? palette.Muted : selected ? palette.AccentText : palette.Ink,
+            TextFormatFlags.Left | TextFormatFlags.VerticalCenter | TextFormatFlags.SingleLine | TextFormatFlags.NoPrefix | TextFormatFlags.EndEllipsis);
+        args.DrawFocusRectangle();
     }
 }
 

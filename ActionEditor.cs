@@ -2,8 +2,8 @@ namespace UltimateMacro;
 
 public sealed class ActionEditor : Form
 {
-    private readonly ComboBox kind = new() { DropDownStyle = ComboBoxStyle.DropDownList, Width = 290, FormattingEnabled = true };
-    private readonly ComboBox key = new() { DropDownStyle = ComboBoxStyle.DropDown, Width = 290, MaxDropDownItems = 14 };
+    private readonly PaletteComboBox kind = new() { DropDownStyle = ComboBoxStyle.DropDownList, Width = 290, FormattingEnabled = true };
+    private readonly PaletteComboBox key = new() { DropDownStyle = ComboBoxStyle.DropDown, Width = 290, MaxDropDownItems = 14 };
     private readonly CheckBox useCurrentCursor = new() { Text = "Aktuelle Mausposition verwenden", AutoSize = true };
     private readonly NumericUpDown x = MainForm.Number(-100000, 100000, 0);
     private readonly NumericUpDown y = MainForm.Number(-120000, 120000, 0);

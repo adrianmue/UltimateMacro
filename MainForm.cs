@@ -39,7 +39,7 @@ public sealed partial class MainForm : Form
     private readonly NumericUpDown maxRun = Number(0, 604800, 0);
     private readonly NumericUpDown speed = Number(0.1m, 10, 1, 2);
     private readonly CheckBox useScanCodes = Check("Tasten als Scan-Codes senden", false);
-    private readonly ComboBox appearanceChoice = new() { Name = "AppearanceMode", AccessibleName = "Darstellung", DropDownStyle = ComboBoxStyle.DropDownList,
+    private readonly PaletteComboBox appearanceChoice = new() { Name = "AppearanceMode", AccessibleName = "Darstellung", DropDownStyle = ComboBoxStyle.DropDownList,
         FormattingEnabled = true, Width = 155, Margin = new Padding(0, 6, 0, 0) };
     private readonly NumericUpDown sample = Number(1, 1000, 15);
     private readonly CheckBox captureKeys = Check("Tastatur", true);
@@ -66,6 +66,7 @@ public sealed partial class MainForm : Form
     private readonly Func<bool> windowsUsesDarkMode;
     private AppearanceMode selectedAppearance;
     private bool applyingAppearance;
+    private bool appearanceChangeQueued;
     private readonly Stopwatch sessionWatch = new();
     private int currentLoop;
     private int currentAction;
@@ -141,7 +142,7 @@ public sealed partial class MainForm : Form
             if (args.Control && args.KeyCode == Keys.O && !Busy) { args.SuppressKeyPress = true; Guard(Open); }
         };
         ApplyAppearance(force: true);
-        appearanceChoice.SelectedIndexChanged += (_, _) => ChangeAppearance();
+        appearanceChoice.SelectedIndexChanged += (_, _) => QueueAppearanceChange();
         UpdateState();
     }
 
@@ -314,9 +315,21 @@ public sealed partial class MainForm : Form
         }
     }
 
-    private void ChangeAppearance()
+    private void QueueAppearanceChange()
     {
-        if (applyingAppearance || appearanceChoice.SelectedItem is not AppearanceMode mode || mode == selectedAppearance) return;
+        if (appearanceChangeQueued || !IsHandleCreated || Disposing || IsDisposed) return;
+        appearanceChangeQueued = true;
+        BeginInvoke(() =>
+        {
+            appearanceChangeQueued = false;
+            if (!Disposing && !IsDisposed &&
+                appearanceChoice.SelectedItem is AppearanceMode mode && mode != selectedAppearance)
+                ChangeAppearance(mode);
+        });
+    }
+
+    private void ChangeAppearance(AppearanceMode mode)
+    {
         selectedAppearance = mode;
         ApplyAppearance();
         try { AtomicWrite(appearancePath, JsonSerializer.Serialize(new AppearanceSettings(mode), MacroFiles.JsonOptions)); }

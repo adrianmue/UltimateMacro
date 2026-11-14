@@ -157,9 +157,23 @@ internal static partial class SelfTests
                     SendTestWindowMessage(main.Handle, 0x031a, 0, 0);
                     await Task.Delay(80);
                     Check(main.BackColor == UiTheme.Light.Canvas, "System mode follows Windows back to light during the session");
+                    var appearanceHandlesDestroyed = 0;
+                    appearance.HandleDestroyed += (_, _) => appearanceHandlesDestroyed++;
+                    var appearanceHandle = appearance.Handle;
+                    appearance.DroppedDown = true;
                     appearance.SelectedItem = AppearanceMode.Dark;
+                    Check(appearance.DroppedDown && main.BackColor == UiTheme.Light.Canvas && !File.Exists(appearancePath),
+                        "Appearance defers restyling and saving until the native selection callback returns");
+                    await Task.Delay(80);
                     Check(main.BackColor == UiTheme.Dark.Canvas && grid.DefaultCellStyle.BackColor == UiTheme.Dark.Surface &&
                         name.BackColor == UiTheme.Dark.Input && libraryMenu.BackColor == UiTheme.Dark.Surface, "Explicit dark mode overrides Windows and styles the window, grid, fields, and menus");
+                    appearance.SelectedItem = AppearanceMode.Light;
+                    await Task.Delay(80);
+                    Check(main.BackColor == UiTheme.Light.Canvas && appearance.Text == "Hell" && appearance.Handle == appearanceHandle && appearanceHandlesDestroyed == 0,
+                        "Switching between dark and light keeps the appearance control's native window intact");
+                    appearance.DroppedDown = false;
+                    appearance.SelectedItem = AppearanceMode.Dark;
+                    await Task.Delay(80);
                     Check(File.ReadAllText(library.SavePath("Sample text & shortcut")) == savedMacro &&
                         File.ReadAllText(Path.Combine(verification.Path, "preferences.json")) == savedPreferences && !main.Text.StartsWith('*'),
                         "Changing appearance does not change the macro or its playback settings");
@@ -235,9 +249,11 @@ internal static partial class SelfTests
                         Check(Equals(themeSwitch.SelectedItem, AppearanceMode.Dark) && reopened.BackColor == UiTheme.Dark.Canvas, "Explicit dark mode is restored on restart");
                         windowsDark = true;
                         themeSwitch.SelectedItem = AppearanceMode.Light;
+                        await Task.Delay(80);
                         Check(reopened.BackColor == UiTheme.Light.Canvas && File.ReadAllText(appearancePath).Contains("\"Light\"", StringComparison.Ordinal),
                             "Explicit light mode overrides Windows dark mode and persists");
                         themeSwitch.SelectedItem = AppearanceMode.Windows;
+                        await Task.Delay(80);
                         Check(reopened.BackColor == UiTheme.Dark.Canvas && File.ReadAllText(appearancePath).Contains("\"Windows\"", StringComparison.Ordinal),
                             "Switching back to Wie Windows immediately follows and saves the system preference");
                         reopened.Close();
