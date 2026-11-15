@@ -193,6 +193,7 @@ public sealed partial class MainForm
         HelpParagraph(HelpSection(article, "Der Ablauf läuft nur einmal"), "Aktiviere „Bis zum Stopp wiederholen“ für die ganze Liste. Prüfe auch das Zeitlimit. Eine einzelne Aktion mit „Anzahl 0“ bleibt aktiv, bis du die Wiedergabe stoppst oder das Zeitlimit greift.");
         HelpParagraph(HelpSection(article, "Der Mauszeiger springt beim Start"), "Öffne die Mausklick-Aktion und aktiviere „Aktuelle Mausposition verwenden“. Prüfe auch, ob im Ablauf eine Aktion „Maus bewegen“ steht.");
         HelpParagraph(HelpSection(article, "Das Bildziel wird nicht gefunden"), "Prüfe die Vorschau. Erfasse den Button neu, wenn sich Fenstergröße, Skalierung oder Aussehen geändert haben. Wähle einen markanten Bereich und lass bei der Vordergrundsuche das Ziel sichtbar.");
+        HelpParagraph(HelpSection(article, "Mehrere mögliche Bildtreffer"), "Markiere für die Vorlage eindeutige Schrift oder ein Symbol. Bei gleichen Buttons nimm ein stabiles Unterscheidungsmerkmal direkt daneben mit in den Rahmen. Prüfe den Ausschnitt in der Vorschau ohne Klick.");
         HelpParagraph(HelpSection(article, "Ein Tastenkürzel reagiert nicht"), "Prüfe die aktiven Kürzel im Schnellstart. Wähle unter „Einstellungen“ eine freie Tastenkombination und klicke auf „Übernehmen“. Windows reserviert F12 für Debugger.");
         return article;
     }

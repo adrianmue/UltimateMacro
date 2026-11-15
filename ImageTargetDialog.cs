@@ -149,7 +149,12 @@ internal sealed class ImageTargetDialog : Form
         var mode = selected.Background ? "Hintergrund-Vorschau" : "Vorschau";
         instructions.Text = !isPreview ? "Ziehe einen engen Rahmen um den Button. Wähle danach per Klick den Punkt innerhalb des Rahmens." : hit
             ? $"{mode}: Treffer mit {match.Similarity:F1} % Ähnlichkeit. Das Fadenkreuz zeigt den Klickpunkt. Es wurde nicht geklickt."
-            : $"{mode}: {WindowImageClickFinder.Describe(match.Status)}. Es wurde nicht geklickt.";
+            : $"{mode}: {WindowImageClickFinder.Describe(match.Status)}. " + (match.Status switch
+            {
+                ImageMatchStatus.Ambiguous or ImageMatchStatus.SearchTooBroad => "Erfasse einen Ausschnitt mit eindeutiger Schrift oder einem markanten Symbol.",
+                ImageMatchStatus.Missing => "Prüfe Zoom und Aussehen des Buttons. Senke die Ähnlichkeit leicht und prüfe erneut ohne Klick.",
+                _ => "Es wurde nicht geklickt."
+            });
         UpdateButtons();
     }
 

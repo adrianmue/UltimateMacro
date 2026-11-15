@@ -8,7 +8,7 @@
     <AssemblyName>UltimateMacro</AssemblyName>
     <ApplicationHighDpiMode>PerMonitorV2</ApplicationHighDpiMode>
     <ApplicationIcon>Assets\UltimateMacro.ico</ApplicationIcon>
-    <Version>1.4.17</Version>
+    <Version>1.4.18</Version>
   </PropertyGroup>
   <ItemGroup>
     <EmbeddedResource Include="Assets\UltimateMacro.ico" LogicalName="UltimateMacro.UltimateMacro.ico" />

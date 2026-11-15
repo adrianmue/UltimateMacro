@@ -36,6 +36,16 @@ internal static partial class SelfTests
             "Pixel matching locates the same button at two different positions after an opaque PNG round trip");
         Check(pattern.Find(duplicates, 94, CancellationToken.None).Status == ImageMatchStatus.Ambiguous && pattern.Find(empty, 94, CancellationToken.None).Status == ImageMatchStatus.Missing,
             "Identical visible buttons are ambiguous and a missing button is not clicked");
+        using var changedTemplate = (Bitmap)template.Clone();
+        changedTemplate.SetPixel(1, 1, Color.Black);
+        changedTemplate.SetPixel(83, 1, Color.Black);
+        changedTemplate.SetPixel(1, 32, Color.Black);
+        using var differentState = TestWindowImage(changedTemplate, second);
+        var tolerantMatch = pattern.Find(differentState, 94, CancellationToken.None);
+        Check(tolerantMatch.Status == ImageMatchStatus.Found && tolerantMatch.Bounds.Location == second &&
+            pattern.Find(differentState, 100, CancellationToken.None).Status == ImageMatchStatus.Missing,
+            "Small changes at high-contrast pixels can match at the configured tolerance while 100 percent remains exact");
+        TestCrowdedImageSearch();
         using var flat = empty.Clone(new Rectangle(0, 0, 16, 16), empty.PixelFormat);
         ExpectFailure(() => _ = new ImagePattern(flat), "Flat selections are rejected as poor image targets");
 
@@ -188,6 +198,40 @@ internal static partial class SelfTests
             Check(WindowImageCapture.DescribeForeground() is null, "Ultimate Macro's own windows cannot be chosen as image targets");
         }
         finally { form.Controls.Remove(surface); }
+    }
+
+    private static void TestCrowdedImageSearch()
+    {
+        using var template = new Bitmap(22, 16, PixelFormat.Format32bppRgb);
+        using (var graphics = Graphics.FromImage(template))
+        {
+            graphics.Clear(Color.SteelBlue);
+            graphics.FillRectangle(Brushes.LightGreen, 4, 3, 5, 10);
+            graphics.FillRectangle(Brushes.Orange, 10, 8, 7, 4);
+        }
+        using var decoy = (Bitmap)template.Clone();
+        for (var y = 0; y < decoy.Height; y++)
+        for (var x = 0; x < decoy.Width; x++)
+        {
+            var color = decoy.GetPixel(x, y);
+            decoy.SetPixel(x, y, Color.FromArgb(Shift(color.R), Shift(color.G), Shift(color.B)));
+        }
+        using var frame = new Bitmap(525, 410, PixelFormat.Format32bppRgb);
+        using var surface = Graphics.FromImage(frame);
+        surface.Clear(Color.Black);
+        for (var y = 0; y < 19; y++)
+        for (var x = 0; x < 20; x++)
+            surface.DrawImageUnscaled(decoy, 26 * x, 21 * y);
+        var exact = new Point(26 * 19, 21 * 18);
+        surface.DrawImageUnscaled(template, exact);
+        var pattern = new ImagePattern(template);
+        Check(pattern.Find(frame, 94, CancellationToken.None) is { Status: ImageMatchStatus.Found, Bounds.Location: var location } && location == exact,
+            "Hundreds of similar positions do not hide a clearly stronger button late in the frame");
+        surface.DrawImageUnscaled(template, Point.Empty);
+        Check(pattern.Find(frame, 94, CancellationToken.None).Status == ImageMatchStatus.Ambiguous,
+            "Two equally strong buttons stay ambiguous even among many similar positions");
+
+        static int Shift(byte channel) => channel >= 8 ? channel - 8 : channel + 8;
     }
 
     private static Bitmap TestButtonImage()

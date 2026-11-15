@@ -86,6 +86,8 @@ Für **Moon Sweepers** und andere Apps, die virtuelle Tastencodes ignorieren, ak
 
 Das Makro sucht vor jedem einzelnen Klick neu, auch bei **Count 0**. Wenn der Treffer im Fensterbild fehlt oder mehrdeutig ist, wartet es ohne Klick. Standardmäßig wartet es unbegrenzt, bis ein Treffer gefunden oder das Makro gestoppt wird. Mit einer positiven **Wartezeit in s** bricht es nach dieser Zeit ohne Treffer ab. **F11** bzw. der konfigurierte Stopptaster wirkt auch während der Suche. Die Wartezeit gilt je Klick und wird nicht durch den Geschwindigkeitsfaktor verändert.
 
+Bei ähnlichen Buttons hilft ein stabiles Unterscheidungsmerkmal im Rahmen, etwa die Beschriftung oder ein benachbartes Symbol. Bei kleinen Farbabweichungen kannst du **Ähnlichkeit %** schrittweise senken und den Klickpunkt in der Vorschau prüfen. Bei **100 %** müssen die Pixel exakt übereinstimmen.
+
 Im normalen Modus muss das ausgewählte Fenster im Vordergrund sein. Nach dem Laden einer gespeicherten Liste muss es anhand von Fenstertitel und Anwendung eindeutig sein. Falls sich der Titel dauerhaft geändert hat, erfasse es erneut. Die Vorlage sucht in Originalgröße: Positionen dürfen sich ändern, aber Zoom, DPI, starke Farbwechsel oder sehr schnelle Animationen können einen Treffer verhindern. Im Makro wird nur der markierte Ausschnitt gespeichert, nicht das gesamte Fensterbild.
 
 ### Bildziel im Hintergrund klicken

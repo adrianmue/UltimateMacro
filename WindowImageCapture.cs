@@ -197,6 +197,7 @@ internal sealed class WindowImageClickFinder : IImageClickFinder
     internal static string Describe(ImageMatchStatus status) => status switch
     {
         ImageMatchStatus.Ambiguous => "Mehrere mögliche Bildtreffer",
+        ImageMatchStatus.SearchTooBroad => "Zu viele ähnliche Stellen für diese Vorlage",
         ImageMatchStatus.WindowUnavailable => "Zielfenster nicht eindeutig oder nicht im Vordergrund",
         ImageMatchStatus.BackgroundUnavailable => "Zielfenster nicht eindeutig, geschlossen oder minimiert",
         ImageMatchStatus.CaptureUnavailable => "Zielfenster liefert kein verwendbares Hintergrundbild",
